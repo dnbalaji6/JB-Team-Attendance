@@ -12,7 +12,7 @@
       background: #f0f2f5; color: #1a1a1a; min-height: 100vh;
     }
     .header {
-      background: linear-gradient(135deg, #c62828, #b71c1c);
+      background: linear-gradient(135deg, #1565c0, #0d47a1, #b71c1c);
       color: white; padding: 20px; text-align: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       position: sticky; top: 0; z-index: 10;
@@ -50,12 +50,13 @@
       border-bottom: 3px solid transparent;
       transition: all 0.2s; color: #888;
     }
-    .tab.active { color: #c62828; border-bottom-color: #c62828; background: #fff5f5; }
+    .tab.active { color: #1565c0; border-bottom-color: #1565c0; background: #e3f2fd; }
     .tab .count {
       display: inline-block; min-width: 20px; padding: 2px 6px;
       background: #fce8e6; color: #c62828; border-radius: 10px;
       font-size: 11px; margin-left: 4px;
     }
+    .tab.active .count { background: #e3f2fd; color: #1565c0; }
 
     .card {
       background: white; border-radius: 12px; padding: 20px;
@@ -73,7 +74,7 @@
       margin-bottom: 12px;
     }
     .request-name { font-size: 16px; font-weight: 700; color: #333; }
-    .request-type { font-size: 13px; color: #7b1fa2; font-weight: 600; }
+    .request-type { font-size: 13px; color: #1565c0; font-weight: 600; }
     .request-submitted { font-size: 11px; color: #aaa; margin-top: 2px; }
 
     .request-details {
@@ -142,7 +143,7 @@
       padding: 16px; border-radius: 12px; text-align: center;
       font-size: 16px; font-weight: 500; margin-bottom: 16px;
     }
-    .status-message.success { background: #e6f4ea; color: #0d8a3e; }
+    .status-message.success { background: #e3f2fd; color: #1565c0; }
     .status-message.error { background: #fce8e6; color: #c5221f; }
 
     .filter-row {
@@ -243,9 +244,10 @@
   var STORAGE_KEY_API = "jb_attendance_api_url";
   var STORAGE_KEY_ADMIN = "jb_leave_admin_pass";
 
- var MEMBERS = [
-    "Ajesh", "Bhoomi", "Divya", "Padmini", "Shobhita", "Shyamala",  "Snehal", "Taurays", "Trissa",
-    "Vinutesh", "Yashwanth"
+  var MEMBERS = [
+    "Ajesh JB", "Bhoomi JB", "Divya Manjunath JB", "Jessie JB",
+    "Padmini JB", "Shobhita JB", "Snehal JB", "Taurays JB",
+    "Vinutesh JB", "Yashwanth JB"
   ];
 
   var allRequests = [];
@@ -436,35 +438,45 @@
   }
 
   // =========================================================
-  // APPS SCRIPT GET — handles redirect-based CORS reliably
+  // APPS SCRIPT GET — JSONP approach (bypasses CORS entirely)
   // =========================================================
+  var jsonpCounter = 0;
   function appsScriptGet(baseUrl, params, onSuccess, onError) {
+    var callbackName = "_jsonp_cb_" + (++jsonpCounter) + "_" + Date.now();
+    params.callback = callbackName;
+
     var url = baseUrl + "?";
     var keys = Object.keys(params);
     for (var i = 0; i < keys.length; i++) {
       if (i > 0) url += "&";
       url += encodeURIComponent(keys[i]) + "=" + encodeURIComponent(params[keys[i]]);
     }
-    fetch(url, { redirect: "follow" })
-    .then(function(r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.text();
-    })
-    .then(function(text) {
-      try {
-        var data = JSON.parse(text);
-        onSuccess(data);
-      } catch (e) {
-        if (text.indexOf("<!DOCTYPE") >= 0 || text.indexOf("<html") >= 0) {
-          onError("Apps Script requires re-deployment with 'Anyone' access");
-        } else {
-          onError("Invalid response from server");
-        }
-      }
-    })
-    .catch(function(err) {
-      onError(err.message || "Network error");
-    });
+
+    var timeout = setTimeout(function() {
+      cleanup();
+      onError("Request timed out. Check API URL and deployment.");
+    }, 15000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      var s = document.getElementById(callbackName);
+      if (s) s.parentNode.removeChild(s);
+    }
+
+    window[callbackName] = function(data) {
+      cleanup();
+      onSuccess(data);
+    };
+
+    var script = document.createElement("script");
+    script.id = callbackName;
+    script.src = url;
+    script.onerror = function() {
+      cleanup();
+      onError("Network error. Check API URL.");
+    };
+    document.body.appendChild(script);
   }
 
   init();
