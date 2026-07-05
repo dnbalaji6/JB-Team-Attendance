@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Leave Admin — JB Team</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5; color: #1a1a1a; min-height: 100vh;
+    }
+    .header {
+      background: linear-gradient(135deg, #c62828, #b71c1c);
+      color: white; padding: 20px; text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: sticky; top: 0; z-index: 10;
+    }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header p { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+    .header { position: relative; }
+    .nav-links {
+      position: absolute; top: 16px; right: 16px;
+      display: flex; gap: 8px;
+    }
+    .nav-links a {
+      color: white; text-decoration: none; font-size: 12px;
+      background: rgba(255,255,255,0.2); padding: 6px 12px;
+      border-radius: 6px;
+    }
+    .settings-btn {
+      position: absolute; top: 16px; left: 16px;
+      background: rgba(255,255,255,0.2); border: none;
+      color: white; font-size: 20px; cursor: pointer;
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+
+    .tabs {
+      display: flex; background: white; border-radius: 12px;
+      margin-bottom: 16px; overflow: hidden;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .tab {
+      flex: 1; padding: 14px; text-align: center;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s; color: #888;
+    }
+    .tab.active { color: #c62828; border-bottom-color: #c62828; background: #fff5f5; }
+    .tab .count {
+      display: inline-block; min-width: 20px; padding: 2px 6px;
+      background: #fce8e6; color: #c62828; border-radius: 10px;
+      font-size: 11px; margin-left: 4px;
+    }
+
+    .card {
+      background: white; border-radius: 12px; padding: 20px;
+      margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .leave-request {
+      border-left: 4px solid #ff9800;
+    }
+    .leave-request.approved-card { border-left-color: #4caf50; }
+    .leave-request.rejected-card { border-left-color: #f44336; }
+
+    .request-header {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    .request-name { font-size: 16px; font-weight: 700; color: #333; }
+    .request-type { font-size: 13px; color: #7b1fa2; font-weight: 600; }
+    .request-submitted { font-size: 11px; color: #aaa; margin-top: 2px; }
+
+    .request-details {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+      margin-bottom: 12px;
+    }
+    .detail-item { font-size: 13px; }
+    .detail-label { color: #888; font-size: 11px; }
+    .detail-value { color: #333; font-weight: 500; }
+
+    .request-reason {
+      font-size: 13px; color: #555; padding: 10px;
+      background: #f9f9f9; border-radius: 6px; margin-bottom: 12px;
+    }
+    .request-reason .label { font-size: 11px; color: #888; margin-bottom: 2px; }
+
+    .action-buttons { display: flex; gap: 8px; }
+    .btn-approve, .btn-reject {
+      flex: 1; padding: 12px; border: none; border-radius: 8px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-approve { background: #4caf50; color: white; }
+    .btn-approve:active { background: #388e3c; }
+    .btn-reject { background: #f44336; color: white; }
+    .btn-reject:active { background: #d32f2f; }
+    .btn-approve:disabled, .btn-reject:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .badge {
+      padding: 4px 10px; border-radius: 12px; font-size: 12px;
+      font-weight: 600; text-transform: uppercase;
+    }
+    .badge.pending { background: #fff8e1; color: #f57f17; }
+    .badge.approved { background: #e6f4ea; color: #0d8a3e; }
+    .badge.rejected { background: #fce8e6; color: #c5221f; }
+
+    .empty-state { text-align: center; color: #999; padding: 40px 20px; font-size: 14px; }
+    .loading-spinner { text-align: center; padding: 40px; color: #999; }
+
+    .btn-refresh {
+      display: block; width: 100%; padding: 12px;
+      background: white; border: 2px solid #e0e0e0;
+      border-radius: 10px; font-size: 14px; font-weight: 600;
+      cursor: pointer; color: #555; margin-bottom: 16px;
+    }
+    .btn-refresh:active { background: #f5f5f5; }
+
+    .summary-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+      margin-bottom: 16px;
+    }
+    .summary-item {
+      text-align: center; padding: 16px 8px;
+      background: white; border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    .summary-item .num { font-size: 28px; font-weight: 700; }
+    .summary-item .lbl { font-size: 11px; color: #888; margin-top: 4px; }
+    .summary-item.pending-s .num { color: #f57f17; }
+    .summary-item.approved-s .num { color: #0d8a3e; }
+    .summary-item.rejected-s .num { color: #c5221f; }
+
+    .admin-note { font-size: 12px; color: #999; padding: 10px; text-align: center; margin-bottom: 12px; }
+
+    .status-message {
+      padding: 16px; border-radius: 12px; text-align: center;
+      font-size: 16px; font-weight: 500; margin-bottom: 16px;
+    }
+    .status-message.success { background: #e6f4ea; color: #0d8a3e; }
+    .status-message.error { background: #fce8e6; color: #c5221f; }
+
+    .filter-row {
+      display: flex; gap: 8px; margin-bottom: 12px; align-items: center;
+    }
+    .filter-row select {
+      flex: 1; padding: 10px; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 14px; background: white;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 12px center;
+    }
+
+    .config-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100; padding: 16px;
+    }
+    .config-box {
+      background: white; border-radius: 16px; padding: 24px;
+      max-width: 400px; width: 100%;
+    }
+    .config-box h2 { font-size: 18px; margin-bottom: 16px; color: #333; }
+    .config-box label { display: block; font-size: 14px; margin-bottom: 4px; color: #555; font-weight: 500; }
+    .config-box input {
+      width: 100%; padding: 10px; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 14px; margin-bottom: 12px;
+    }
+    .config-box .btn-save {
+      width: 100%; padding: 14px; background: #c62828;
+      color: white; border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    .config-box .config-note { font-size: 12px; color: #999; margin-top: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+
+<div class="config-overlay" id="configOverlay" style="display:none;">
+  <div class="config-box">
+    <h2>Admin Setup</h2>
+    <label>Apps Script Web App URL</label>
+    <input type="url" id="configApiUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <label>Admin Password</label>
+    <input type="password" id="configAdminPass" placeholder="Enter admin password">
+    <button class="btn-save" onclick="saveConfig()">Save & Continue</button>
+    <p class="config-note">Password is set in the Apps Script config.</p>
+  </div>
+</div>
+
+<div class="header">
+  <button class="settings-btn" onclick="showConfig()" title="Settings">&#9881;</button>
+  <h1>Leave Admin</h1>
+  <p>Approve / Reject Requests</p>
+  <div class="nav-links">
+    <a href="index.html">Attendance</a>
+    <a href="leave.html">Leave Form</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div id="statusMessage" class="status-message" style="display:none;"></div>
+
+  <!-- Summary -->
+  <div class="summary-grid" id="summaryGrid">
+    <div class="summary-item pending-s"><div class="num" id="pendingCount">-</div><div class="lbl">Pending</div></div>
+    <div class="summary-item approved-s"><div class="num" id="approvedCount">-</div><div class="lbl">Approved</div></div>
+    <div class="summary-item rejected-s"><div class="num" id="rejectedCount">-</div><div class="lbl">Rejected</div></div>
+  </div>
+
+  <button class="btn-refresh" onclick="loadAllRequests()">Refresh</button>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <div class="tab active" id="tabPending" onclick="switchTab('pending')">Pending <span class="count" id="pendingBadge">0</span></div>
+    <div class="tab" id="tabApproved" onclick="switchTab('approved')">Approved</div>
+    <div class="tab" id="tabRejected" onclick="switchTab('rejected')">Rejected</div>
+    <div class="tab" id="tabAll" onclick="switchTab('all')">All</div>
+  </div>
+
+  <!-- Filter -->
+  <div class="filter-row">
+    <select id="filterMember" onchange="applyFilter()">
+      <option value="">All Members</option>
+    </select>
+  </div>
+
+  <!-- Requests List -->
+  <div id="requestsList">
+    <div class="loading-spinner">Loading requests...</div>
+  </div>
+
+</div>
+
+<script>
+  var STORAGE_KEY_API = "jb_attendance_api_url";
+  var STORAGE_KEY_ADMIN = "jb_leave_admin_pass";
+
+  var MEMBERS = [
+    "Ajesh JB", "Bhoomi JB", "Divya Manjunath JB", "Jessie JB",
+    "Padmini JB", "Shobhita JB", "Snehal JB", "Taurays JB",
+    "Vinutesh JB", "Yashwanth JB"
+  ];
+
+  var allRequests = [];
+  var currentTab = "pending";
+
+  function init() {
+    var apiUrl = localStorage.getItem(STORAGE_KEY_API);
+    var adminPass = localStorage.getItem(STORAGE_KEY_ADMIN);
+    if (!apiUrl || !adminPass) {
+      document.getElementById("configOverlay").style.display = "flex";
+    }
+
+    var filter = document.getElementById("filterMember");
+    MEMBERS.forEach(function(name) {
+      var opt = document.createElement("option");
+      opt.value = name; opt.textContent = name;
+      filter.appendChild(opt);
+    });
+
+    loadAllRequests();
+  }
+
+  function saveConfig() {
+    var url = document.getElementById("configApiUrl").value.trim();
+    var pass = document.getElementById("configAdminPass").value.trim();
+    if (!url || !url.startsWith("https://script.google.com/")) {
+      alert("Please enter a valid Apps Script URL.");
+      return;
+    }
+    if (!pass) {
+      alert("Please enter the admin password.");
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY_API, url);
+    localStorage.setItem(STORAGE_KEY_ADMIN, pass);
+    document.getElementById("configOverlay").style.display = "none";
+    loadAllRequests();
+  }
+
+  function showConfig() {
+    document.getElementById("configApiUrl").value = localStorage.getItem(STORAGE_KEY_API) || "";
+    document.getElementById("configAdminPass").value = localStorage.getItem(STORAGE_KEY_ADMIN) || "";
+    document.getElementById("configOverlay").style.display = "flex";
+  }
+
+  function loadAllRequests() {
+    var apiUrl = localStorage.getItem(STORAGE_KEY_API);
+    var adminPass = localStorage.getItem(STORAGE_KEY_ADMIN);
+    if (!apiUrl || !adminPass) return;
+
+    document.getElementById("requestsList").innerHTML =
+      '<div class="loading-spinner">Loading requests...</div>';
+
+    fetch(apiUrl + "?action=getAdminLeaveData&adminPass=" + encodeURIComponent(adminPass), { mode: "cors" })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.error) {
+        document.getElementById("requestsList").innerHTML =
+          '<div class="empty-state">' + data.error + '</div>';
+        return;
+      }
+      allRequests = data.requests || [];
+      updateSummary();
+      renderRequests();
+    })
+    .catch(function(err) {
+      document.getElementById("requestsList").innerHTML =
+        '<div class="empty-state">Could not load data. Check settings and try again.</div>';
+    });
+  }
+
+  function updateSummary() {
+    var pending = 0, approved = 0, rejected = 0;
+    allRequests.forEach(function(r) {
+      var s = (r.status || "").toLowerCase();
+      if (s === "pending") pending++;
+      else if (s === "approved") approved++;
+      else if (s === "rejected") rejected++;
+    });
+    document.getElementById("pendingCount").textContent = pending;
+    document.getElementById("approvedCount").textContent = approved;
+    document.getElementById("rejectedCount").textContent = rejected;
+    document.getElementById("pendingBadge").textContent = pending;
+  }
+
+  function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll(".tab").forEach(function(t) { t.classList.remove("active"); });
+    document.getElementById("tab" + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add("active");
+    renderRequests();
+  }
+
+  function applyFilter() { renderRequests(); }
+
+  function renderRequests() {
+    var container = document.getElementById("requestsList");
+    var filterMember = document.getElementById("filterMember").value;
+
+    var filtered = allRequests.filter(function(r) {
+      var statusMatch = currentTab === "all" || (r.status || "").toLowerCase() === currentTab;
+      var memberMatch = !filterMember || r.name === filterMember;
+      return statusMatch && memberMatch;
+    });
+
+    if (filtered.length === 0) {
+      container.innerHTML = '<div class="empty-state">No ' + currentTab + ' requests found.</div>';
+      return;
+    }
+
+    container.innerHTML = "";
+    filtered.forEach(function(req) {
+      var statusClass = (req.status || "pending").toLowerCase();
+      var div = document.createElement("div");
+      div.className = "card leave-request " + statusClass + "-card";
+
+      var actionsHTML = "";
+      if (statusClass === "pending") {
+        actionsHTML =
+          '<div class="action-buttons">' +
+            '<button class="btn-approve" onclick="handleAction(' + req.row + ', \'Approved\')">Approve</button>' +
+            '<button class="btn-reject" onclick="handleAction(' + req.row + ', \'Rejected\')">Reject</button>' +
+          '</div>';
+      } else {
+        actionsHTML = '<span class="badge ' + statusClass + '">' + req.status + '</span>';
+      }
+
+      div.innerHTML =
+        '<div class="request-header">' +
+          '<div>' +
+            '<div class="request-name">' + req.name + '</div>' +
+            '<div class="request-type">' + req.leaveType + '</div>' +
+            '<div class="request-submitted">Submitted: ' + (req.timestamp || "") + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<div class="request-details">' +
+          '<div class="detail-item"><div class="detail-label">From</div><div class="detail-value">' + req.fromDate + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">To</div><div class="detail-value">' + req.toDate + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Days</div><div class="detail-value">' + req.days + (req.halfDay === "Yes" ? " (Half)" : "") + '</div></div>' +
+          '<div class="detail-item"><div class="detail-label">Status</div><div class="detail-value">' + req.status + '</div></div>' +
+        '</div>' +
+        '<div class="request-reason"><div class="label">Reason</div>' + (req.reason || "-") + '</div>' +
+        actionsHTML;
+
+      container.appendChild(div);
+    });
+  }
+
+  function handleAction(row, action) {
+    var apiUrl = localStorage.getItem(STORAGE_KEY_API);
+    var adminPass = localStorage.getItem(STORAGE_KEY_ADMIN);
+    if (!apiUrl || !adminPass) return;
+
+    var payload = {
+      action: "updateLeaveStatus",
+      row: row,
+      status: action,
+      adminPass: adminPass,
+      timestamp: new Date().toISOString()
+    };
+
+    // Disable buttons in the card
+    var card = event.target.closest(".leave-request");
+    var buttons = card.querySelectorAll("button");
+    buttons.forEach(function(b) { b.disabled = true; b.style.opacity = "0.5"; });
+
+    fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload),
+      mode: "no-cors"
+    })
+    .then(function() {
+      showStatus("Leave " + action.toLowerCase() + " successfully. Refreshing...", "success");
+      setTimeout(loadAllRequests, 2000);
+    })
+    .catch(function() {
+      showStatus("Action failed. Check connection.", "error");
+      buttons.forEach(function(b) { b.disabled = false; b.style.opacity = "1"; });
+    });
+  }
+
+  function showStatus(message, type) {
+    var el = document.getElementById("statusMessage");
+    el.textContent = message;
+    el.className = "status-message " + type;
+    el.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (type === "success") {
+      setTimeout(function() { el.style.display = "none"; }, 4000);
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
