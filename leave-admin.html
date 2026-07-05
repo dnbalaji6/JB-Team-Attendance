@@ -299,21 +299,18 @@
     document.getElementById("requestsList").innerHTML =
       '<div class="loading-spinner">Loading requests...</div>';
 
-    fetch(apiUrl + "?action=getAdminLeaveData&adminPass=" + encodeURIComponent(adminPass), { mode: "cors" })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.error) {
+    appsScriptGet(apiUrl, { action: "getAdminLeaveData", adminPass: adminPass }, function(data) {
+      if (data && data.error) {
         document.getElementById("requestsList").innerHTML =
           '<div class="empty-state">' + data.error + '</div>';
         return;
       }
-      allRequests = data.requests || [];
+      allRequests = (data && data.requests) || [];
       updateSummary();
       renderRequests();
-    })
-    .catch(function(err) {
+    }, function(err) {
       document.getElementById("requestsList").innerHTML =
-        '<div class="empty-state">Could not load data. Check settings and try again.</div>';
+        '<div class="empty-state">Could not load data. (' + err + ')</div>';
     });
   }
 
@@ -436,6 +433,38 @@
     if (type === "success") {
       setTimeout(function() { el.style.display = "none"; }, 4000);
     }
+  }
+
+  // =========================================================
+  // APPS SCRIPT GET — handles redirect-based CORS reliably
+  // =========================================================
+  function appsScriptGet(baseUrl, params, onSuccess, onError) {
+    var url = baseUrl + "?";
+    var keys = Object.keys(params);
+    for (var i = 0; i < keys.length; i++) {
+      if (i > 0) url += "&";
+      url += encodeURIComponent(keys[i]) + "=" + encodeURIComponent(params[keys[i]]);
+    }
+    fetch(url, { redirect: "follow" })
+    .then(function(r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.text();
+    })
+    .then(function(text) {
+      try {
+        var data = JSON.parse(text);
+        onSuccess(data);
+      } catch (e) {
+        if (text.indexOf("<!DOCTYPE") >= 0 || text.indexOf("<html") >= 0) {
+          onError("Apps Script requires re-deployment with 'Anyone' access");
+        } else {
+          onError("Invalid response from server");
+        }
+      }
+    })
+    .catch(function(err) {
+      onError(err.message || "Network error");
+    });
   }
 
   init();
