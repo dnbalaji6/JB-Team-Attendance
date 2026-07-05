@@ -12,7 +12,7 @@
       background: #f0f2f5; color: #1a1a1a; min-height: 100vh;
     }
     .header {
-      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      background: linear-gradient(135deg, #1565c0, #0d47a1, #b71c1c);
       color: white; padding: 20px; text-align: center;
       box-shadow: 0 2px 8px rgba(0,0,0,0.15);
       position: sticky; top: 0; z-index: 10; position: relative;
@@ -35,7 +35,7 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 12px center;
     }
-    select:focus { border-color: #1a73e8; outline: none; }
+    select:focus { border-color: #1565c0; outline: none; }
     .activity-buttons { display: flex; gap: 10px; }
     .activity-btn {
       flex: 1; padding: 14px; border: 2px solid #e0e0e0;
@@ -62,10 +62,10 @@
       display: inline-flex; align-items: center; gap: 6px;
     }
     .btn:active { transform: scale(0.97); }
-    .btn-capture { background: #1a73e8; color: white; padding: 14px 32px; font-size: 16px; }
+    .btn-capture { background: #c62828; color: white; padding: 14px 32px; font-size: 16px; }
     .btn-retake { background: #f1f3f4; color: #333; }
     .btn-start-camera {
-      background: #1a73e8; color: white; padding: 16px 32px; font-size: 16px;
+      background: #1565c0; color: white; padding: 16px 32px; font-size: 16px;
       width: 100%; border: none; border-radius: 10px; font-weight: 600; cursor: pointer;
     }
 
@@ -77,21 +77,21 @@
     .location-status.success { background: #e6f4ea; color: #0d8a3e; }
     .location-status.error { background: #fce8e6; color: #c5221f; }
     .location-details { font-size: 12px; color: #666; margin-top: 6px; }
-    .location-details a { color: #1a73e8; }
+    .location-details a { color: #1565c0; }
 
     .btn-submit {
-      width: 100%; padding: 16px; background: #0d8a3e; color: white;
+      width: 100%; padding: 16px; background: #c62828; color: white;
       font-size: 18px; border-radius: 12px; border: none;
       font-weight: 600; cursor: pointer; transition: all 0.2s;
     }
     .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
-    .btn-submit:not(:disabled):active { transform: scale(0.98); background: #0b7a35; }
+    .btn-submit:not(:disabled):active { transform: scale(0.98); background: #b71c1c; }
 
     .status-message {
       padding: 16px; border-radius: 12px; text-align: center;
       font-size: 16px; font-weight: 500; margin-bottom: 16px;
     }
-    .status-message.success { background: #e6f4ea; color: #0d8a3e; }
+    .status-message.success { background: #e3f2fd; color: #1565c0; }
     .status-message.error { background: #fce8e6; color: #c5221f; }
 
     .spinner {
@@ -102,7 +102,7 @@
     @keyframes spin { to { transform: rotate(360deg); } }
 
     .timestamp { text-align: center; padding: 8px; }
-    .timestamp .time { font-size: 28px; font-weight: 700; color: #1a73e8; }
+    .timestamp .time { font-size: 28px; font-weight: 700; color: #1565c0; }
     .timestamp .date { margin-top: 2px; font-size: 13px; color: #666; }
     .security-note { font-size: 11px; color: #999; text-align: center; margin-top: 8px; }
 
@@ -123,9 +123,9 @@
       width: 100%; padding: 10px; border: 2px solid #e0e0e0;
       border-radius: 8px; font-size: 14px; margin-bottom: 12px;
     }
-    .config-box input:focus { border-color: #1a73e8; outline: none; }
+    .config-box input:focus { border-color: #1565c0; outline: none; }
     .config-box .btn-save {
-      width: 100%; padding: 14px; background: #1a73e8;
+      width: 100%; padding: 14px; background: #1565c0;
       color: white; border: none; border-radius: 10px;
       font-size: 16px; font-weight: 600; cursor: pointer;
     }
@@ -135,7 +135,7 @@
     .login-screen {
       min-height: 100vh; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      background: linear-gradient(135deg, #1565c0, #0d47a1, #b71c1c);
       padding: 20px;
     }
     .login-card {
@@ -156,9 +156,9 @@
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
       background-repeat: no-repeat; background-position: right 12px center;
     }
-    .login-card select:focus, .login-card input:focus { border-color: #1a73e8; outline: none; }
+    .login-card select:focus, .login-card input:focus { border-color: #1565c0; outline: none; }
     .btn-login {
-      width: 100%; padding: 14px; background: #1a73e8; color: white;
+      width: 100%; padding: 14px; background: #c62828; color: white;
       border: none; border-radius: 10px; font-size: 16px;
       font-weight: 600; cursor: pointer; transition: all 0.2s;
     }
@@ -171,7 +171,7 @@
     }
     .login-footer { text-align: center; margin-top: 16px; }
     .login-footer a {
-      color: #1a73e8; text-decoration: none; font-size: 13px;
+      color: #1565c0; text-decoration: none; font-size: 13px;
     }
     .login-setup-link {
       color: white; text-decoration: none; font-size: 12px;
@@ -337,9 +337,9 @@
   var ALLOWED_LOCATIONS = [];
 
   // Member list
- var MEMBERS = [
-    "Ajesh", "Bhoomi", "Divya", "Padmini", "Shobhita", "Shyamala",  "Snehal", "Taurays", "Trissa",
-    "Vinutesh", "Yashwanth"
+  var MEMBERS = [
+    "Ajesh", "Bhoomi", "Divya", "Padmini", "Shobhita", "Shyamala",
+    "Snehal", "Taurays", "Trissa", "Vinutesh", "Yashwanth"
   ];
 
   // =========================================================
@@ -803,10 +803,13 @@
   }
 
   // =========================================================
-  // APPS SCRIPT GET — handles redirect-based CORS reliably
-  // Uses fetch with redirect:follow. Falls back to iframe.
+  // APPS SCRIPT GET — JSONP approach (bypasses CORS entirely)
   // =========================================================
+  var jsonpCounter = 0;
   function appsScriptGet(baseUrl, params, onSuccess, onError) {
+    var callbackName = "_jsonp_cb_" + (++jsonpCounter) + "_" + Date.now();
+    params.callback = callbackName;
+
     var url = baseUrl + "?";
     var keys = Object.keys(params);
     for (var i = 0; i < keys.length; i++) {
@@ -814,30 +817,31 @@
       url += encodeURIComponent(keys[i]) + "=" + encodeURIComponent(params[keys[i]]);
     }
 
-    // Try fetch first (works in most browsers with Apps Script)
-    fetch(url, { redirect: "follow" })
-    .then(function(r) {
-      if (!r.ok) throw new Error("HTTP " + r.status);
-      return r.text();
-    })
-    .then(function(text) {
-      try {
-        var data = JSON.parse(text);
-        onSuccess(data);
-      } catch (e) {
-        // If response is HTML (Google login page), means deployment access is wrong
-        if (text.indexOf("<!DOCTYPE") >= 0 || text.indexOf("<html") >= 0) {
-          onError("Apps Script requires re-deployment with 'Anyone' access");
-        } else {
-          onError("Invalid response from server");
-        }
-      }
-    })
-    .catch(function(err) {
-      // Fallback: use a hidden iframe + postMessage approach won't work cross-origin.
-      // So try with no-cors as a POST instead (sending as query params in body)
-      onError(err.message || "Network error");
-    });
+    var timeout = setTimeout(function() {
+      cleanup();
+      onError("Request timed out. Check API URL and deployment.");
+    }, 15000);
+
+    function cleanup() {
+      clearTimeout(timeout);
+      delete window[callbackName];
+      var s = document.getElementById(callbackName);
+      if (s) s.parentNode.removeChild(s);
+    }
+
+    window[callbackName] = function(data) {
+      cleanup();
+      onSuccess(data);
+    };
+
+    var script = document.createElement("script");
+    script.id = callbackName;
+    script.src = url;
+    script.onerror = function() {
+      cleanup();
+      onError("Network error. Check API URL.");
+    };
+    document.body.appendChild(script);
   }
 
   // =========================================================
