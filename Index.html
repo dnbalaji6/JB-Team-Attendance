@@ -1,67 +1,787 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Updated Index</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>JB Team Attendance</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📋</text></svg>">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #f0f2f5;
+      color: #1a1a1a;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a73e8, #0d47a1);
+      color: white;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .header h1 { font-size: 20px; font-weight: 600; }
+    .header p { font-size: 12px; opacity: 0.85; margin-top: 4px; }
+
+    .container { max-width: 480px; margin: 0 auto; padding: 16px; }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      background: white;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='%23666' viewBox='0 0 16 16'%3E%3Cpath d='M8 11L3 6h10z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 12px center;
+    }
+    select:focus { border-color: #1a73e8; outline: none; }
+
+    .activity-buttons { display: flex; gap: 10px; }
+
+    .activity-btn {
+      flex: 1;
+      padding: 14px;
+      border: 2px solid #e0e0e0;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.2s;
+      background: white;
+      user-select: none;
+    }
+    .activity-btn:active { transform: scale(0.97); }
+
+    .activity-btn.login-btn.selected {
+      border-color: #0d8a3e;
+      background: #e6f4ea;
+      color: #0d8a3e;
+    }
+    .activity-btn.logout-btn.selected {
+      border-color: #c5221f;
+      background: #fce8e6;
+      color: #c5221f;
+    }
+
+    /* Camera */
+    .camera-section { text-align: center; }
+
+    #videoContainer {
+      position: relative;
+      width: 100%;
+      max-width: 360px;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      background: #000;
+    }
+    #video {
+      width: 100%;
+      display: block;
+      border-radius: 12px;
+      transform: scaleX(-1);
+    }
+    #canvas { display: none; }
+    #capturedPhoto {
+      width: 100%;
+      max-width: 360px;
+      border-radius: 12px;
+      display: none;
+      margin: 0 auto;
+    }
+
+    .camera-controls {
+      margin-top: 12px;
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-capture {
+      background: #1a73e8;
+      color: white;
+      padding: 14px 32px;
+      font-size: 16px;
+    }
+    .btn-retake { background: #f1f3f4; color: #333; }
+
+    .btn-start-camera {
+      background: #1a73e8;
+      color: white;
+      padding: 16px 32px;
+      font-size: 16px;
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Location */
+    .location-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 14px;
+    }
+    .location-status.pending { background: #fff8e1; color: #f57f17; }
+    .location-status.success { background: #e6f4ea; color: #0d8a3e; }
+    .location-status.error { background: #fce8e6; color: #c5221f; }
+    .location-details { font-size: 12px; color: #666; margin-top: 6px; }
+    .location-details a { color: #1a73e8; }
+
+    /* Submit */
+    .btn-submit {
+      width: 100%;
+      padding: 16px;
+      background: #0d8a3e;
+      color: white;
+      font-size: 18px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-submit:disabled { background: #ccc; cursor: not-allowed; }
+    .btn-submit:not(:disabled):active { transform: scale(0.98); background: #0b7a35; }
+
+    /* Status */
+    .status-message {
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+    .status-message.success { background: #e6f4ea; color: #0d8a3e; }
+    .status-message.error { background: #fce8e6; color: #c5221f; }
+
+    .spinner {
+      display: inline-block;
+      width: 20px; height: 20px;
+      border: 3px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .timestamp { text-align: center; padding: 8px; }
+    .timestamp .time { font-size: 28px; font-weight: 700; color: #1a73e8; }
+    .timestamp .date { margin-top: 2px; font-size: 13px; color: #666; }
+
+    .security-note { font-size: 11px; color: #999; text-align: center; margin-top: 8px; }
+
+    /* Config overlay */
+    .config-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 100;
+      padding: 16px;
+    }
+    .config-box {
+      background: white; border-radius: 16px; padding: 24px;
+      max-width: 400px; width: 100%;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    }
+    .config-box h2 { font-size: 18px; margin-bottom: 16px; color: #333; }
+    .config-box label { display: block; font-size: 14px; margin-bottom: 4px; color: #555; font-weight: 500; }
+    .config-box input {
+      width: 100%; padding: 10px; border: 2px solid #e0e0e0;
+      border-radius: 8px; font-size: 14px; margin-bottom: 12px;
+    }
+    .config-box input:focus { border-color: #1a73e8; outline: none; }
+    .config-box .btn-save {
+      width: 100%; padding: 14px; background: #1a73e8;
+      color: white; border: none; border-radius: 10px;
+      font-size: 16px; font-weight: 600; cursor: pointer;
+    }
+    .config-box .config-note { font-size: 12px; color: #999; margin-top: 8px; text-align: center; }
+
+    /* Settings gear */
+    .settings-btn {
+      position: absolute; top: 16px; right: 16px;
+      background: rgba(255,255,255,0.2); border: none;
+      color: white; font-size: 20px; cursor: pointer;
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .header { position: relative; }
+  </style>
 </head>
 <body>
-<h2>This file is a placeholder.</h2>
-<p>I couldn't safely reconstruct your entire 600+ line HTML file within the chat limits without risking truncation.</p>
-<p>Instead, use the updated camera function below in your existing Index.html.</p>
-<pre>
-async function startCamera() {
-  try {
-    if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error("getUserMedia is not supported");
+
+<!-- Config Overlay (shown on first visit if API URL not set) -->
+<div class="config-overlay" id="configOverlay" style="display:none;">
+  <div class="config-box">
+    <h2>First-Time Setup</h2>
+    <p style="font-size:13px; color:#666; margin-bottom:16px;">
+      Enter your Google Apps Script Web App URL. This is needed to save attendance data to your Google Sheet.
+    </p>
+    <label>Apps Script Web App URL</label>
+    <input type="url" id="configApiUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <button class="btn-save" onclick="saveConfig()">Save & Continue</button>
+    <p class="config-note">This is saved in your browser. Each team member needs to set this once.</p>
+  </div>
+</div>
+
+<div class="header">
+  <h1>JB Team Attendance</h1>
+  <p>Login / Logout</p>
+  <button class="settings-btn" onclick="showConfig()" title="Settings">&#9881;</button>
+</div>
+
+<div class="container">
+
+  <!-- Clock -->
+  <div class="card">
+    <div class="timestamp">
+      <div class="time" id="currentTime">--:--:--</div>
+      <div class="date" id="currentDate">Loading...</div>
+    </div>
+  </div>
+
+  <!-- Status -->
+  <div id="statusMessage" class="status-message" style="display:none;"></div>
+
+  <!-- Step 1: Name -->
+  <div class="card">
+    <div class="card-title">Step 1: Your Name</div>
+    <select id="memberName">
+      <option value="">-- Select your name --</option>
+    </select>
+  </div>
+
+  <!-- Step 2: Activity -->
+  <div class="card">
+    <div class="card-title">Step 2: Activity</div>
+    <div class="activity-buttons">
+      <div class="activity-btn login-btn" onclick="selectActivity(this, 'Login')">Login</div>
+      <div class="activity-btn logout-btn" onclick="selectActivity(this, 'Logout')">Logout</div>
+    </div>
+  </div>
+
+  <!-- Step 3: Selfie -->
+  <div class="card">
+    <div class="card-title">Step 3: Live Selfie</div>
+    <div class="camera-section">
+      <div id="cameraPrompt">
+        <button class="btn-start-camera" onclick="startCamera()">Open Camera</button>
+      </div>
+      <div id="videoContainer" style="display:none;">
+        <video id="video" autoplay playsinline muted></video>
+      </div>
+      <img id="capturedPhoto">
+      <div class="camera-controls" id="cameraControls" style="display:none;">
+        <button class="btn btn-capture" id="captureBtn" onclick="capturePhoto()">Capture Selfie</button>
+        <button class="btn btn-retake" id="retakeBtn" onclick="retakePhoto()" style="display:none;">Retake</button>
+      </div>
+      <div class="security-note">Live camera only. Gallery uploads are not allowed.</div>
+    </div>
+  </div>
+
+  <!-- Step 4: Location -->
+  <div class="card">
+    <div class="card-title">Step 4: Location (Auto-captured)</div>
+    <div class="location-status pending" id="locationStatus">Capturing GPS location...</div>
+    <div class="location-details" id="locationDetails"></div>
+    <button class="btn btn-retake" onclick="captureLocation()" style="margin-top:8px; font-size:13px; padding:8px 16px;">Refresh Location</button>
+  </div>
+
+  <!-- Submit -->
+  <div class="card">
+    <button class="btn-submit" id="submitBtn" onclick="submitForm()" disabled>Submit Attendance</button>
+  </div>
+
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+  // =========================================================
+  // CONFIG
+  // =========================================================
+  const STORAGE_KEY_API = "jb_attendance_api_url";
+  const STORAGE_KEY_NAME = "jb_attendance_last_name";
+
+  // =========================================================
+  // GEOFENCING — Allowed locations
+  // Add your allowed locations below. Users MUST be within
+  // the radius (meters) of at least ONE location to submit.
+  // Set GEOFENCE_ENABLED = false to disable geofencing.
+  // =========================================================
+  const GEOFENCE_ENABLED = false;
+  const ALLOWED_LOCATIONS = [
+    // Example: { name: "Head Office",   lat: 12.9716,  lng: 77.5946, radiusMeters: 200 },
+    //          { name: "Branch Office", lat: 13.0827,  lng: 80.2707, radiusMeters: 150 },
+    { name: "Office", lat: 0.0000, lng: 0.0000, radiusMeters: 500 }
+    // ^^^ CHANGE the lat/lng above to your actual office coordinates!
+  ];
+
+  // Member list — update this when team changes
+  const MEMBERS = [
+    "Ajesh JB",
+    "Bhoomi JB",
+    "Divya Manjunath JB",
+    "Jessie JB",
+    "Padmini JB",
+    "Shobhita JB",
+    "Snehal JB",
+    "Taurays JB",
+    "Vinutesh JB",
+    "Yashwanth JB"
+  ];
+
+  // =========================================================
+  // STATE
+  // =========================================================
+  let selectedActivity = "";
+  let selfieBase64 = null;
+  let gpsLatitude = null;
+  let gpsLongitude = null;
+  let gpsAccuracy = null;
+  let videoStream = null;
+  let isSubmitting = false;
+  let geofenceOk = false;
+
+  // =========================================================
+  // INIT
+  // =========================================================
+  function init() {
+    // Check if API URL is configured
+    const apiUrl = localStorage.getItem(STORAGE_KEY_API);
+    if (!apiUrl) {
+      document.getElementById("configOverlay").style.display = "flex";
     }
 
-    let stream;
-    try {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "user" } },
-        audio: false
-      });
-    } catch (e) {
-      stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: false
-      });
+    // Populate member dropdown
+    const select = document.getElementById("memberName");
+    MEMBERS.forEach(function(name) {
+      const opt = document.createElement("option");
+      opt.value = name;
+      opt.textContent = name;
+      select.appendChild(opt);
+    });
+
+    // Restore last used name
+    const lastName = localStorage.getItem(STORAGE_KEY_NAME);
+    if (lastName) {
+      select.value = lastName;
     }
 
-    videoStream = stream;
-    const video = document.getElementById("video");
-    video.srcObject = stream;
-    await video.play();
+    // Start clock
+    updateClock();
+    setInterval(updateClock, 1000);
 
-  } catch (err) {
-    console.error(err);
-
-    let msg;
-    switch (err.name) {
-      case "NotAllowedError":
-        msg = "Camera permission denied.";
-        break;
-      case "NotFoundError":
-        msg = "No camera found.";
-        break;
-      case "NotReadableError":
-        msg = "Camera is already in use.";
-        break;
-      case "OverconstrainedError":
-        msg = "Requested camera unavailable.";
-        break;
-      case "SecurityError":
-        msg = "Security restriction.";
-        break;
-      default:
-        msg = err.name + ": " + err.message;
-    }
-
-    alert(msg);
-    showStatus(msg, "error");
+    // Auto-capture GPS
+    captureLocation();
   }
-}
-</pre>
+
+  // =========================================================
+  // CONFIG
+  // =========================================================
+  function saveConfig() {
+    const url = document.getElementById("configApiUrl").value.trim();
+    if (!url || !url.startsWith("https://script.google.com/")) {
+      alert("Please enter a valid Google Apps Script URL starting with https://script.google.com/");
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY_API, url);
+    document.getElementById("configOverlay").style.display = "none";
+  }
+
+  function showConfig() {
+    const url = localStorage.getItem(STORAGE_KEY_API) || "";
+    document.getElementById("configApiUrl").value = url;
+    document.getElementById("configOverlay").style.display = "flex";
+  }
+
+  // =========================================================
+  // CLOCK
+  // =========================================================
+  function updateClock() {
+    const now = new Date();
+    document.getElementById("currentTime").textContent =
+      now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true });
+    document.getElementById("currentDate").textContent =
+      now.toLocaleDateString("en-IN", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+  }
+
+  // =========================================================
+  // ACTIVITY
+  // =========================================================
+  function selectActivity(el, activity) {
+    selectedActivity = activity;
+    document.querySelectorAll(".activity-btn").forEach(function(btn) { btn.classList.remove("selected"); });
+    el.classList.add("selected");
+    checkSubmitReady();
+  }
+
+  // =========================================================
+  // CAMERA
+  // =========================================================
+  function startCamera() {
+    document.getElementById("cameraPrompt").style.display = "none";
+    document.getElementById("videoContainer").style.display = "block";
+    document.getElementById("cameraControls").style.display = "flex";
+    document.getElementById("captureBtn").style.display = "inline-flex";
+    document.getElementById("retakeBtn").style.display = "none";
+
+    var video = document.getElementById("video");
+
+    navigator.mediaDevices.getUserMedia({
+      video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } },
+      audio: false
+    })
+    .then(function(stream) {
+      videoStream = stream;
+      video.srcObject = stream;
+    })
+    .catch(function(err) {
+      showStatus("Camera access denied. Please allow camera permission in your browser settings and reload.", "error");
+      document.getElementById("cameraPrompt").style.display = "block";
+      document.getElementById("videoContainer").style.display = "none";
+      document.getElementById("cameraControls").style.display = "none";
+    });
+  }
+
+  function capturePhoto() {
+    var video = document.getElementById("video");
+    var canvas = document.getElementById("canvas");
+    var photo = document.getElementById("capturedPhoto");
+
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    var ctx = canvas.getContext("2d");
+
+    // Mirror horizontally to match preview
+    ctx.translate(canvas.width, 0);
+    ctx.scale(-1, 1);
+    ctx.drawImage(video, 0, 0);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+
+    // Timestamp watermark
+    var now = new Date();
+    var watermark = now.toLocaleString("en-IN", {
+      day: "2-digit", month: "short", year: "numeric",
+      hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true
+    });
+
+    ctx.font = "bold 16px Arial";
+    ctx.fillStyle = "rgba(255, 255, 0, 0.9)";
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.7)";
+    ctx.lineWidth = 2;
+
+    // Bottom watermarks
+    ctx.strokeText(watermark, 10, canvas.height - 15);
+    ctx.fillText(watermark, 10, canvas.height - 15);
+
+    if (gpsLatitude !== null && gpsLongitude !== null) {
+      var gpsText = "GPS: " + gpsLatitude.toFixed(4) + ", " + gpsLongitude.toFixed(4);
+      ctx.strokeText(gpsText, 10, canvas.height - 38);
+      ctx.fillText(gpsText, 10, canvas.height - 38);
+    }
+
+    // Member name watermark (top)
+    var memberName = document.getElementById("memberName").value || "";
+    if (memberName) {
+      ctx.font = "bold 18px Arial";
+      ctx.strokeText(memberName, 10, 25);
+      ctx.fillText(memberName, 10, 25);
+    }
+
+    selfieBase64 = canvas.toDataURL("image/jpeg", 0.8);
+    photo.src = selfieBase64;
+    photo.style.display = "block";
+
+    // Stop video
+    video.style.display = "none";
+    document.getElementById("videoContainer").style.display = "none";
+    document.getElementById("captureBtn").style.display = "none";
+    document.getElementById("retakeBtn").style.display = "inline-flex";
+
+    if (videoStream) {
+      videoStream.getTracks().forEach(function(track) { track.stop(); });
+      videoStream = null;
+    }
+
+    checkSubmitReady();
+  }
+
+  function retakePhoto() {
+    selfieBase64 = null;
+    var photo = document.getElementById("capturedPhoto");
+    photo.style.display = "none";
+    photo.src = "";
+    document.getElementById("video").style.display = "block";
+    checkSubmitReady();
+    startCamera();
+  }
+
+  // =========================================================
+  // GPS
+  // =========================================================
+  function captureLocation() {
+    var statusEl = document.getElementById("locationStatus");
+    var detailsEl = document.getElementById("locationDetails");
+
+    if (!navigator.geolocation) {
+      statusEl.className = "location-status error";
+      statusEl.textContent = "GPS not supported on this device.";
+      return;
+    }
+
+    statusEl.className = "location-status pending";
+    statusEl.textContent = "Capturing GPS location...";
+    detailsEl.innerHTML = "";
+
+    navigator.geolocation.getCurrentPosition(
+      function(position) {
+        gpsLatitude = position.coords.latitude;
+        gpsLongitude = position.coords.longitude;
+        gpsAccuracy = Math.round(position.coords.accuracy);
+
+        // Geofence check
+        if (GEOFENCE_ENABLED) {
+          var fence = checkGeofence(gpsLatitude, gpsLongitude);
+          if (fence.inside) {
+            geofenceOk = true;
+            statusEl.className = "location-status success";
+            statusEl.textContent = "Location verified: " + fence.locationName;
+            detailsEl.innerHTML =
+              "Lat: " + gpsLatitude.toFixed(6) + " | Lng: " + gpsLongitude.toFixed(6) +
+              "<br>Accuracy: " + gpsAccuracy + " meters" +
+              "<br>Distance: " + fence.distance + "m from " + fence.locationName +
+              ' (<a href="https://www.google.com/maps?q=' + gpsLatitude + ',' + gpsLongitude +
+              '" target="_blank">View on Maps</a>)';
+          } else {
+            geofenceOk = false;
+            statusEl.className = "location-status error";
+            statusEl.textContent = "You are not at an allowed location.";
+            detailsEl.innerHTML =
+              "Nearest: " + fence.locationName + " (" + fence.distance + "m away, max " + fence.maxRadius + "m)" +
+              "<br>Move to an allowed location and tap 'Refresh Location'." +
+              '<br><a href="https://www.google.com/maps?q=' + gpsLatitude + ',' + gpsLongitude +
+              '" target="_blank">Your current location</a>';
+          }
+        } else {
+          geofenceOk = true;
+          statusEl.className = "location-status success";
+          statusEl.textContent = "Location captured successfully";
+          detailsEl.innerHTML =
+            "Lat: " + gpsLatitude.toFixed(6) + " | Lng: " + gpsLongitude.toFixed(6) +
+            "<br>Accuracy: " + gpsAccuracy + " meters" +
+            '<br><a href="https://www.google.com/maps?q=' + gpsLatitude + ',' + gpsLongitude +
+            '" target="_blank">View on Maps</a>';
+        }
+
+        checkSubmitReady();
+      },
+      function(error) {
+        statusEl.className = "location-status error";
+        if (error.code === 1) {
+          statusEl.textContent = "Location permission denied. Please allow GPS access in browser settings.";
+        } else if (error.code === 2) {
+          statusEl.textContent = "Location unavailable. Please enable GPS on your device.";
+        } else {
+          statusEl.textContent = "Location request timed out. Tap 'Refresh Location' to retry.";
+        }
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+    );
+  }
+
+  // =========================================================
+  // SUBMIT VALIDATION
+  // =========================================================
+  function checkSubmitReady() {
+    var name = document.getElementById("memberName").value;
+    var ready = name && selectedActivity && selfieBase64 && gpsLatitude !== null && geofenceOk;
+    document.getElementById("submitBtn").disabled = !ready;
+  }
+
+  document.getElementById("memberName").addEventListener("change", function() {
+    // Save last used name
+    localStorage.setItem(STORAGE_KEY_NAME, this.value);
+    checkSubmitReady();
+  });
+
+  // =========================================================
+  // SUBMIT
+  // =========================================================
+  function submitForm() {
+    if (isSubmitting) return;
+
+    var name = document.getElementById("memberName").value;
+    if (!name) { showStatus("Please select your name.", "error"); return; }
+    if (!selectedActivity) { showStatus("Please select Login or Logout.", "error"); return; }
+    if (!selfieBase64) { showStatus("Please capture a selfie.", "error"); return; }
+    if (gpsLatitude === null) { showStatus("GPS not captured. Please allow location access.", "error"); return; }
+    if (GEOFENCE_ENABLED && !geofenceOk) { showStatus("You are not at an allowed location. Move closer and refresh GPS.", "error"); return; }
+
+    var apiUrl = localStorage.getItem(STORAGE_KEY_API);
+    if (!apiUrl) { showConfig(); return; }
+
+    isSubmitting = true;
+    var submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner"></span> Submitting...';
+
+    var payload = {
+      name: name,
+      activity: selectedActivity,
+      selfieBase64: selfieBase64,
+      latitude: gpsLatitude,
+      longitude: gpsLongitude,
+      accuracy: gpsAccuracy,
+      timestamp: new Date().toISOString()
+    };
+
+    fetch(apiUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain" },
+      body: JSON.stringify(payload)
+    })
+    .then(function() {
+      // With no-cors, we can't read the response, but the request is sent
+      isSubmitting = false;
+      showStatus(
+        "Attendance submitted! " + selectedActivity + " at " +
+        new Date().toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true }),
+        "success"
+      );
+      resetForm();
+    })
+    .catch(function(err) {
+      isSubmitting = false;
+      showStatus("Submission failed. Please check your internet connection and try again.", "error");
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Submit Attendance";
+    });
+  }
+
+  function resetForm() {
+    selfieBase64 = null;
+    selectedActivity = "";
+
+    document.querySelectorAll(".activity-btn").forEach(function(btn) { btn.classList.remove("selected"); });
+    var photo = document.getElementById("capturedPhoto");
+    photo.style.display = "none";
+    photo.src = "";
+    document.getElementById("cameraPrompt").style.display = "block";
+    document.getElementById("videoContainer").style.display = "none";
+    document.getElementById("cameraControls").style.display = "none";
+    document.getElementById("retakeBtn").style.display = "none";
+
+    var submitBtn = document.getElementById("submitBtn");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Submit Attendance";
+
+    geofenceOk = false;
+
+    // Re-capture GPS
+    captureLocation();
+  }
+
+  // =========================================================
+  // STATUS MESSAGES
+  // =========================================================
+  function showStatus(message, type) {
+    var el = document.getElementById("statusMessage");
+    el.textContent = message;
+    el.className = "status-message " + type;
+    el.style.display = "block";
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    if (type === "success") {
+      setTimeout(function() { el.style.display = "none"; }, 5000);
+    }
+  }
+
+  // =========================================================
+  // GEOFENCE — Haversine distance
+  // =========================================================
+  function haversineDistance(lat1, lng1, lat2, lng2) {
+    var R = 6371000; // Earth radius in meters
+    var dLat = (lat2 - lat1) * Math.PI / 180;
+    var dLng = (lng2 - lng1) * Math.PI / 180;
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng / 2) * Math.sin(dLng / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return Math.round(R * c);
+  }
+
+  function checkGeofence(lat, lng) {
+    var closest = null;
+    var closestDist = Infinity;
+    for (var i = 0; i < ALLOWED_LOCATIONS.length; i++) {
+      var loc = ALLOWED_LOCATIONS[i];
+      var dist = haversineDistance(lat, lng, loc.lat, loc.lng);
+      if (dist <= loc.radiusMeters) {
+        return { inside: true, locationName: loc.name, distance: dist, maxRadius: loc.radiusMeters };
+      }
+      if (dist < closestDist) {
+        closestDist = dist;
+        closest = loc;
+      }
+    }
+    return { inside: false, locationName: closest.name, distance: closestDist, maxRadius: closest.radiusMeters };
+  }
+
+  // =========================================================
+  // START
+  // =========================================================
+  init();
+</script>
+
 </body>
 </html>
