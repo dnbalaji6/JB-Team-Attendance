@@ -338,7 +338,7 @@
 
   // Member list
   var MEMBERS = [
-    "Ajesh", "Bhoomi", "Divya", "Padmini", "Shobhita", "Shyamala",
+    "Ajesh", "Bhoomi", "Divya", "Padmini", "Shobhitha", "Shyamala",
     "Snehal", "Taurays", "Trissa", "Vinutesh", "Yashwanth"
   ];
 
@@ -479,7 +479,7 @@
     appsScriptGet(apiUrl, { action: "getMemberLocations", name: loggedInUser }, function(data) {
       if (data && data.locations && data.locations.length > 0) {
         ALLOWED_LOCATIONS = data.locations;
-        GEOFENCE_ENABLED = true;
+        GEOFENCE_ENABLED = false;
         var names = data.locations.map(function(l) { return l.name; }).join(", ");
         statusEl.className = "location-status pending";
         statusEl.textContent = "Allowed locations: " + names;
