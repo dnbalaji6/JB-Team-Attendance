@@ -392,25 +392,22 @@
     loginBtn.disabled = true;
     loginBtn.textContent = "Verifying...";
 
-    fetch(apiUrl + "?action=validatePin&name=" + encodeURIComponent(name) + "&pin=" + encodeURIComponent(pin), { mode: "cors" })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
+    appsScriptGet(apiUrl, { action: "validatePin", name: name, pin: pin }, function(data) {
       loginBtn.disabled = false;
       loginBtn.textContent = "Login";
-      if (data.valid) {
+      if (data && data.valid) {
         loggedInUser = name;
         loggedInPin = pin;
         sessionStorage.setItem(SESSION_KEY_USER, JSON.stringify({ name: name, pin: pin }));
         document.getElementById("loginError").style.display = "none";
         showMainApp();
       } else {
-        showLoginError(data.message || "Invalid PIN.");
+        showLoginError((data && data.message) || "Invalid PIN.");
       }
-    })
-    .catch(function() {
+    }, function(err) {
       loginBtn.disabled = false;
       loginBtn.textContent = "Login";
-      showLoginError("Could not verify. Check internet or API URL.");
+      showLoginError("Could not verify. (" + err + ")");
     });
   }
 
@@ -445,10 +442,8 @@
     var historyEl = document.getElementById("leaveHistory");
     historyEl.innerHTML = '<div class="loading-spinner">Loading...</div>';
 
-    fetch(apiUrl + "?action=getLeaveData&name=" + encodeURIComponent(loggedInUser), { mode: "cors" })
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.balance) {
+    appsScriptGet(apiUrl, { action: "getLeaveData", name: loggedInUser }, function(data) {
+      if (data && data.balance) {
         document.getElementById("balanceCard").style.display = "block";
         var grid = document.getElementById("balanceGrid");
         grid.innerHTML = "";
@@ -461,7 +456,7 @@
           grid.appendChild(item);
         });
       }
-      if (data.history && data.history.length > 0) {
+      if (data && data.history && data.history.length > 0) {
         historyEl.innerHTML = "";
         data.history.forEach(function(item) {
           var div = document.createElement("div");
@@ -479,8 +474,7 @@
       } else {
         historyEl.innerHTML = '<div class="empty-state">No leave requests yet</div>';
       }
-    })
-    .catch(function() {
+    }, function() {
       historyEl.innerHTML = '<div class="empty-state">Could not load history.</div>';
     });
   }
@@ -602,6 +596,38 @@
     el.style.display = "block";
     window.scrollTo({ top: 0, behavior: "smooth" });
     if (type === "success") setTimeout(function() { el.style.display = "none"; }, 6000);
+  }
+
+  // =========================================================
+  // APPS SCRIPT GET — handles redirect-based CORS reliably
+  // =========================================================
+  function appsScriptGet(baseUrl, params, onSuccess, onError) {
+    var url = baseUrl + "?";
+    var keys = Object.keys(params);
+    for (var i = 0; i < keys.length; i++) {
+      if (i > 0) url += "&";
+      url += encodeURIComponent(keys[i]) + "=" + encodeURIComponent(params[keys[i]]);
+    }
+    fetch(url, { redirect: "follow" })
+    .then(function(r) {
+      if (!r.ok) throw new Error("HTTP " + r.status);
+      return r.text();
+    })
+    .then(function(text) {
+      try {
+        var data = JSON.parse(text);
+        onSuccess(data);
+      } catch (e) {
+        if (text.indexOf("<!DOCTYPE") >= 0 || text.indexOf("<html") >= 0) {
+          onError("Apps Script requires re-deployment with 'Anyone' access");
+        } else {
+          onError("Invalid response from server");
+        }
+      }
+    })
+    .catch(function(err) {
+      onError(err.message || "Network error");
+    });
   }
 
   init();
